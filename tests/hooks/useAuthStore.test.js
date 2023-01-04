@@ -123,4 +123,63 @@ describe("Test AuthSore Hook", () => {
     });
     spy.mockRestore();
   });
+
+  it("StartRegister should fail to create a new user", async () => {
+    const mockStore = getMockStore({ ...notAuthenticatedState });
+    const { result } = renderHook(() => useAuthStore(), {
+      wrapper: ({ children }) => (
+        <Provider store={mockStore}>{children}</Provider>
+      ),
+    });
+
+    await act(async () => {
+      await result.current.startRegister(testUserCredentials);
+    });
+
+    const { errorMessage, status, user } = result.current;
+
+    expect({ errorMessage, status, user }).toEqual({
+      errorMessage: "User already exists",
+      status: "not-authenticated",
+      user: {},
+    });
+  });
+
+  it("checkAuth should fail if dont have a token", async () => {
+    const mockStore = getMockStore({ ...initialState });
+    const { result } = renderHook(() => useAuthStore(), {
+      wrapper: ({ children }) => (
+        <Provider store={mockStore}>{children}</Provider>
+      ),
+    });
+
+    await act(async () => {
+      await result.current.checkAuthToken();
+    });
+
+    const { errorMessage, status, user } = result.current;
+    expect({ errorMessage, status, user }).toEqual({
+      status: "not-authenticated",
+      user: {},
+      errorMessage: undefined,
+    });
+  });
+
+  it("checkAuth should not fail if have a token", async () => {
+    const { data } = await calendarApi.post("/auth", testUserCredentials);
+    localStorage.setItem("token", data.token);
+
+    const mockStore = getMockStore({ ...initialState });
+    const { result } = renderHook(() => useAuthStore(), {
+      wrapper: ({ children }) => (
+        <Provider store={mockStore}>{children}</Provider>
+      ),
+    });
+
+    await act(async () => {
+      await result.current.checkAuthToken();
+    });
+    const { status } = result.current;
+    expect(status).toBe("authenticated");
+  });
 });

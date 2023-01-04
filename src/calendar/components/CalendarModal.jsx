@@ -7,6 +7,7 @@ import es from "date-fns/locale/es";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useCalendarStore, useUiStore } from "../../hooks";
+import { getEnvVariable } from "../../helpers";
 
 registerLocale("es", es);
 
@@ -20,8 +21,9 @@ const customStyles = {
     transform: "translate(-50%, -50%)",
   },
 };
-
-Modal.setAppElement("#root");
+if (getEnvVariable().VITE_MODE !== "test") {
+  Modal.setAppElement("#root");
+}
 
 export const CalendarModal = () => {
   const { isDateModalOpen, closeDateModal } = useUiStore();
@@ -63,7 +65,7 @@ export const CalendarModal = () => {
     closeDateModal();
   };
 
-  const onSubmit = async e => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     const difference = differenceInSeconds(formValues.end, formValues.start);
     if (isNaN(difference) || difference <= 0) {
@@ -109,7 +111,7 @@ export const CalendarModal = () => {
           <DatePicker
             minDate={formValues.start}
             selected={formValues.start}
-            onChange={e => onDateChange(e, "start")}
+            onChange={(e) => onDateChange(e, "start")}
             className="form-control"
             dateFormat="Pp"
             showTimeSelect
@@ -123,7 +125,7 @@ export const CalendarModal = () => {
           <DatePicker
             minDate={formValues.start}
             selected={formValues.end}
-            onChange={e => onDateChange(e, "end")}
+            onChange={(e) => onDateChange(e, "end")}
             className="form-control"
             dateFormat="Pp"
             showTimeSelect
